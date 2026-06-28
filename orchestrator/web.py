@@ -53,13 +53,31 @@ _init_state()
 # Helpers
 # ---------------------------------------------------------------------------
 @st.cache_data(show_spinner=False, ttl=300)
-def _cached_run(settings_dict: dict, intent: str):
-    """Run the pipeline with the given settings. Cached so re-renders are free."""
+def _cached_run(settings_dict: dict, intent: str, api_keys: dict):
+    """Run the pipeline with the given settings. Cached so re-renders are free.
+
+    `api_keys` is a dict like {"openai": "sk-...", "anthropic": "sk-ant-..."}.
+    Keys are injected into os.environ for this run only (not persisted).
+    """
     s = Settings.from_request(settings_dict)
     with tempfile.TemporaryDirectory() as td:
         out_dir = Path(td) / "out"
         out_dir.mkdir(parents=True, exist_ok=True)
         os.environ["JOYCAD_LLM_PROVIDER"] = s.llm_provider or "mock"
+        # Inject per-session API keys into env for the duration of this run.
+        # Empty strings are skipped; existing server-side env vars win only
+        # when no session key was pasted for that provider.
+        _PROVIDER_ENV_KEYS = {
+            "openai":      "OPENAI_API_KEY",
+            "anthropic":   "ANTHROPIC_API_KEY",
+            "openrouter":  "OPENROUTER_API_KEY",
+            "ollama_host": "OLLAMA_HOST",
+            "vllm_base":   "VLLM_BASE_URL",
+        }
+        for k, env_key in _PROVIDER_ENV_KEYS.items():
+            val = (api_keys or {}).get(k, "").strip()
+            if val:
+                os.environ[env_key] = val
         cfg = PipelineConfig(
             intent=intent,
             out_dir=out_dir,
@@ -102,12 +120,20 @@ def _cached_run(settings_dict: dict, intent: str):
 
 @st.cache_data(show_spinner=False, ttl=600)
 def _get_capabilities():
+    """Live status of every dep JoyCAD might use, plus how to fix what's missing."""
     import platform, shutil
     import importlib.util as iu
 
     def has(name: str) -> bool:
         try: return iu.find_spec(name) is not None
         except Exception: return False
+
+    try:
+        from validation import collision_backend as _cb
+        bknd = _cb()
+    except Exception:
+        bknd = "aabb"
+
     return {
         "python": sys.version.split()[0],
         "platform": platform.platform(),
@@ -123,6 +149,39 @@ def _get_capabilities():
             "fcl":           has("fcl"),
             "openai":        has("openai"),
             "anthropic":     has("anthropic"),
+        },
+        "collision_backend": bknd,
+        "tool_status": {
+            "freecadcmd": {
+                "installed": bool(shutil.which("freecadcmd")),
+                "install_cmd": "apt-get install -y freecad",
+                "used_for": "FreeCAD CAM backend + FreeCAD CAD engine",
+                "fallback": "CadQuery (default)",
+            },
+            "ccx": {
+                "installed": bool(shutil.which("ccx")),
+                "install_cmd": "apt-get install -y calculix-ccx",
+                "used_for": "FEA stress simulation",
+                "fallback": "FEA validator skipped",
+            },
+            "prusa-slicer": {
+                "installed": bool(shutil.which("prusa-slicer")),
+                "install_cmd": "download from prusa3d.com",
+                "used_for": "advanced FDM slicer profiles",
+                "fallback": "CadQuery CAM writes standard Marlin G-code",
+            },
+            "ollama": {
+                "installed": bool(shutil.which("ollama")),
+                "install_cmd": "curl -fsSL https://ollama.com/install.sh | sh && ollama pull llama3.1",
+                "used_for": "local LLM, no API key",
+                "fallback": "mock LLM or cloud providers",
+            },
+            "fcl": {
+                "installed": has("fcl"),
+                "install_cmd": "pip install python-fcl   # needs libfcl-dev; no wheel for Python 3.14",
+                "used_for": "mesh-vs-mesh collision detection",
+                "fallback": f"pure-Python AABB (active: {bknd})",
+            },
         },
     }
 
@@ -241,9 +300,65 @@ with st.sidebar:
         for k, v in caps["modules"].items():
             icon = "✅" if v else "❌"
             st.write(f"  {icon} `{k}`")
+
+        # Tell the user what's missing AND how to fix it
+        missing = [(k, t) for k, t in caps.get("tool_status", {}).items()
+                   if not t.get("installed")]
+        if missing:
+            st.write("**🔧 How to install the missing tools:**")
+            for k, t in missing:
+                with st.container(border=True):
+                    st.markdown(f"**{k}** — _{t['used_for']}_")
+                    st.code(t["install_cmd"], language="bash")
+                    st.caption(f"↩ fallback: {t['fallback']}")
+        st.write(f"**Collision backend:** `{caps.get('collision_backend', '?')}`")
+
         if st.button("🔄 Refresh", key="refresh_caps"):
             _get_capabilities.clear()
             st.rerun()
+
+    st.divider()
+
+    # --- API keys (per-browser-session only; not persisted) ---
+    with st.expander("🔑 API Keys", expanded=False):
+        st.caption(
+            "Pasted keys are kept in **this browser session only** (in-memory). "
+            "They are sent to the server for the duration of a pipeline run "
+            "and discarded after. They never touch the database or Render env vars."
+        )
+        st.session_state.openai_key = st.text_input(
+            "OpenAI API Key", type="password",
+            value=st.session_state.get("openai_key", ""),
+            placeholder="sk-...",
+            help="Used when llm_provider = openai or openai-cloud preset.")
+        st.session_state.anthropic_key = st.text_input(
+            "Anthropic API Key", type="password",
+            value=st.session_state.get("anthropic_key", ""),
+            placeholder="sk-ant-...",
+            help="Used when llm_provider = anthropic.")
+        st.session_state.openrouter_key = st.text_input(
+            "OpenRouter API Key", type="password",
+            value=st.session_state.get("openrouter_key", ""),
+            placeholder="sk-or-...",
+            help="Used when llm_provider = openrouter.")
+        st.session_state.ollama_host = st.text_input(
+            "Ollama host (advanced)",
+            value=st.session_state.get("ollama_host", "http://localhost:11434"),
+            help="Where Ollama is running. The default assumes local; on Render, "
+                 "this would point to an external Ollama instance.")
+        st.session_state.vllm_base = st.text_input(
+            "vLLM base URL (advanced)",
+            value=st.session_state.get("vllm_base", "http://localhost:8000/v1"),
+            help="OpenAI-compatible endpoint of your vLLM server.")
+        cols = st.columns(2)
+        with cols[0]:
+            if st.button("🗑️ Clear keys", use_container_width=True):
+                for k in ("openai_key", "anthropic_key", "openrouter_key"):
+                    st.session_state[k] = ""
+                st.success("Cleared.")
+                st.rerun()
+        with cols[1]:
+            st.caption(f"🔒 {sum(1 for k in ('openai_key','anthropic_key','openrouter_key') if st.session_state.get(k))} key(s) set")
 
     st.divider()
     st.caption("API endpoints: `/v1/info`, `/v1/settings`, `/v1/pipeline`, `/v1/presets`.")
@@ -329,8 +444,19 @@ if run and intent_text.strip():
         "export_formats": export_formats,
         "log_level": log_level, "extra_context": extra_context,
     }
+    # Collect any API keys the user pasted in this session. They flow into
+    # the pipeline runner only for this single run.
+    api_keys = {
+        "openai":      st.session_state.get("openai_key", ""),
+        "anthropic":   st.session_state.get("anthropic_key", ""),
+        "openrouter":  st.session_state.get("openrouter_key", ""),
+        "ollama_host": st.session_state.get("ollama_host", ""),
+        "vllm_base":   st.session_state.get("vllm_base", ""),
+    }
+    # Strip empty so we don't clobber server-side env vars unnecessarily.
+    api_keys = {k: v for k, v in api_keys.items() if v.strip()}
     with st.spinner(f"Building with preset **{chosen}**…"):
-        result = _cached_run(settings_payload_full, intent_text.strip())
+        result = _cached_run(settings_payload_full, intent_text.strip(), api_keys)
 
     if not result["ok"]:
         st.error(f"Pipeline failed: {result.get('error', 'unknown')}")
