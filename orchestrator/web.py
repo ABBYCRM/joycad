@@ -71,6 +71,7 @@ def _cached_run(settings_dict: dict, intent: str, api_keys: dict):
             "openai":      "OPENAI_API_KEY",
             "anthropic":   "ANTHROPIC_API_KEY",
             "openrouter":  "OPENROUTER_API_KEY",
+            "nvidia":      "NVIDIA_API_KEY",
             "ollama_host": "OLLAMA_HOST",
             "vllm_base":   "VLLM_BASE_URL",
         }
@@ -249,8 +250,10 @@ with st.sidebar:
     )
     llm_provider = st.selectbox(
         "LLM provider",
-        options=["mock", "ollama", "openai", "anthropic", "openrouter", "vllm"],
-        index=["mock", "ollama", "openai", "anthropic", "openrouter", "vllm"].index(chosen_preset.llm_provider),
+        options=["mock", "ollama", "openai", "anthropic", "openrouter", "vllm", "nvidia"],
+        index=["mock", "ollama", "openai", "anthropic", "openrouter", "vllm", "nvidia"].index(chosen_preset.llm_provider)
+              if chosen_preset.llm_provider in ["mock", "ollama", "openai", "anthropic", "openrouter", "vllm", "nvidia"]
+              else 0,
         help="mock = deterministic, zero API key. ollama = local LLM. cloud = needs key.",
     )
 
@@ -341,6 +344,18 @@ with st.sidebar:
             value=st.session_state.get("openrouter_key", ""),
             placeholder="sk-or-...",
             help="Used when llm_provider = openrouter.")
+        st.session_state.nvidia_key = st.text_input(
+            "NVIDIA NIM API Key", type="password",
+            value=st.session_state.get("nvidia_key", ""),
+            placeholder="nvapi-...",
+            help="Get a free key at https://build.nvidia.com → 'Get API Key'. "
+                 "Used when llm_provider = nvidia (Llama 3.1 70B by default).")
+        st.session_state.nvidia_model = st.text_input(
+            "NVIDIA model (advanced)",
+            value=st.session_state.get("nvidia_model", "meta/llama-3.1-70b-instruct"),
+            help="Any model from https://build.nvidia.com — e.g. "
+                 "meta/llama-3.1-70b-instruct, meta/llama-3.3-70b-instruct, "
+                 "mistralai/mixtral-8x22b-instruct-v0.1.")
         st.session_state.ollama_host = st.text_input(
             "Ollama host (advanced)",
             value=st.session_state.get("ollama_host", "http://localhost:11434"),
@@ -353,12 +368,12 @@ with st.sidebar:
         cols = st.columns(2)
         with cols[0]:
             if st.button("🗑️ Clear keys", use_container_width=True):
-                for k in ("openai_key", "anthropic_key", "openrouter_key"):
+                for k in ("openai_key", "anthropic_key", "openrouter_key", "nvidia_key"):
                     st.session_state[k] = ""
                 st.success("Cleared.")
                 st.rerun()
         with cols[1]:
-            st.caption(f"🔒 {sum(1 for k in ('openai_key','anthropic_key','openrouter_key') if st.session_state.get(k))} key(s) set")
+            st.caption(f"🔒 {sum(1 for k in ('openai_key','anthropic_key','openrouter_key','nvidia_key') if st.session_state.get(k))} key(s) set")
 
     st.divider()
     st.caption("API endpoints: `/v1/info`, `/v1/settings`, `/v1/pipeline`, `/v1/presets`.")
@@ -426,7 +441,7 @@ with st.expander("Equivalent curl (local `joycad serve` only)", expanded=False):
     # Only include non-empty API keys in the curl payload
     api_keys_payload = {
         k: st.session_state.get(k, "")
-        for k in ("openai_key", "anthropic_key", "openrouter_key",
+        for k in ("openai_key", "anthropic_key", "openrouter_key", "nvidia_key",
                   "ollama_host", "vllm_base")
         if st.session_state.get(k, "").strip()
     }
@@ -435,6 +450,7 @@ with st.expander("Equivalent curl (local `joycad serve` only)", expanded=False):
             "openai":      api_keys_payload.get("openai_key", ""),
             "anthropic":   api_keys_payload.get("anthropic_key", ""),
             "openrouter":  api_keys_payload.get("openrouter_key", ""),
+            "nvidia":      api_keys_payload.get("nvidia_key", ""),
             "ollama_host": api_keys_payload.get("ollama_host", ""),
             "vllm_base":   api_keys_payload.get("vllm_base", ""),
         }
@@ -471,9 +487,14 @@ if run and intent_text.strip():
         "openai":      st.session_state.get("openai_key", ""),
         "anthropic":   st.session_state.get("anthropic_key", ""),
         "openrouter":  st.session_state.get("openrouter_key", ""),
+        "nvidia":      st.session_state.get("nvidia_key", ""),
         "ollama_host": st.session_state.get("ollama_host", ""),
         "vllm_base":   st.session_state.get("vllm_base", ""),
     }
+    # If user picked NVIDIA and typed a custom model, pass it as an override
+    if (st.session_state.get("nvidia_model", "").strip() and
+        "meta/llama-3.1-70b-instruct" != st.session_state.get("nvidia_model", "").strip()):
+        os.environ["NVIDIA_MODEL"] = st.session_state["nvidia_model"].strip()
     # Strip empty so we don't clobber server-side env vars unnecessarily.
     api_keys = {k: v for k, v in api_keys.items() if v.strip()}
     with st.spinner(f"Building with preset **{chosen}**…"):

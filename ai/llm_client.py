@@ -178,7 +178,8 @@ def llm_factory(provider: str | None = None, **overrides) -> LLMClient:
     """Build the LLM client based on env / override.
 
     Args:
-        provider: one of ``mock | openai | anthropic | ollama | vllm | openrouter``.
+        provider: one of
+            ``mock | openai | anthropic | ollama | vllm | openrouter | nvidia``.
         **overrides: e.g. model="gpt-4o", base_url="..."
     """
     provider = (provider or os.getenv("JOYCAD_LLM_PROVIDER", "openai")).lower()
@@ -216,6 +217,19 @@ def llm_factory(provider: str | None = None, **overrides) -> LLMClient:
             base_url="https://openrouter.ai/api/v1",
             api_key=os.getenv("OPENROUTER_API_KEY"),
             model=overrides.get("model", "anthropic/claude-3.5-sonnet"),
+        )
+    if provider == "nvidia":
+        # NVIDIA NIM API (https://build.nvidia.com) — OpenAI-compatible.
+        # Get a free key at https://build.nvidia.com → "Get API Key".
+        # Default model is Llama 3.1 70B Instruct — strong at code generation.
+        return OpenAICompatClient(
+            provider_label="nvidia",
+            base_url=os.getenv("NVIDIA_BASE_URL",
+                               "https://integrate.api.nvidia.com/v1"),
+            api_key=os.getenv("NVIDIA_API_KEY"),
+            model=overrides.get("model",
+                                os.getenv("NVIDIA_MODEL",
+                                          "meta/llama-3.1-70b-instruct")),
         )
     raise ValueError(f"Unknown LLM provider: {provider!r}")
 
