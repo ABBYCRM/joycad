@@ -109,33 +109,40 @@ def _capability_status() -> dict:
         except Exception:
             return False
 
+    # Resolve which collision backend is active (FCL wins if importable)
+    try:
+        from validation import collision_backend as _cb
+        collision_bknd = _cb()
+    except Exception:
+        collision_bknd = "aabb"
+
     return {
         "python": sys.version.split()[0],
         "platform": platform.platform(),
         "executables_on_path": {
-            "freecadcmd": shutil.which("freecadcmd"),
-            "ccx":        shutil.which("ccx"),
+            "freecadcmd":  shutil.which("freecadcmd"),
+            "ccx":         shutil.which("ccx"),
             "prusa-slicer": shutil.which("prusa-slicer"),
-            "ollama":     shutil.which("ollama"),
+            "ollama":      shutil.which("ollama"),
         },
         "python_modules": {
-            "cadquery":       has("cadquery"),
-            "streamlit":      has("streamlit"),
-            "fastapi":        has("fastapi"),
-            "ezdxf":          has("ezdxf"),
+            "cadquery":             has("cadquery"),
+            "streamlit":            has("streamlit"),
+            "fastapi":              has("fastapi"),
+            "ezdxf":                has("ezdxf"),
             "sentence_transformers": has("sentence_transformers"),
-            "faiss":          has("faiss"),
-            "fcl":            has("fcl"),
-            "openai":         has("openai"),
-            "anthropic":      has("anthropic"),
-            "trimesh":        has("trimesh"),
+            "faiss":                has("faiss"),
+            "fcl":                  has("fcl"),
+            "openai":               has("openai"),
+            "anthropic":            has("anthropic"),
+            "trimesh":              has("trimesh"),
         },
         "llm_providers_available": [
             p for p, env_key, mod in [
                 ("mock",      None,                       None),
                 ("openai",    "OPENAI_API_KEY",           "openai"),
                 ("anthropic", "ANTHROPIC_API_KEY",        "anthropic"),
-                ("ollama",    "OLLAMA_BASE_URL",          None),
+                ("ollama",    "OLLAMA_HOST",              None),
                 ("openrouter","OPENROUTER_API_KEY",       "openai"),  # uses openai client
                 ("vllm",      "VLLM_BASE_URL",            "openai"),
             ]
@@ -143,6 +150,44 @@ def _capability_status() -> dict:
                or (mod is not None and has(mod))
                or os.getenv(env_key)
         ],
+        "collision_backend": collision_bknd,
+        "tool_status": {
+            "freecadcmd": {
+                "installed":   bool(shutil.which("freecadcmd")),
+                "installable_via": "apt",
+                "install_cmd": "apt-get install -y freecad",
+                "used_for":   "optional FreeCAD CAM backend + FreeCAD CAD engine",
+                "fallback":   "CadQuery CAM (default) and CadQuery CAD",
+            },
+            "ccx": {
+                "installed":   bool(shutil.which("ccx")),
+                "installable_via": "apt",
+                "install_cmd": "apt-get install -y calculix-ccx",
+                "used_for":   "FEA stress simulation",
+                "fallback":   "FEA validator skipped (status='skipped')",
+            },
+            "prusa-slicer": {
+                "installed":   bool(shutil.which("prusa-slicer")),
+                "installable_via": "manual",
+                "install_cmd": "download from prusa3d.com (not in Ubuntu repos; cloud sandbox)",
+                "used_for":   "advanced slicer profiles for FDM 3D printing",
+                "fallback":   "CadQuery CAM writes standard Marlin G-code",
+            },
+            "ollama": {
+                "installed":   bool(shutil.which("ollama")),
+                "installable_via": "curl",
+                "install_cmd": "curl -fsSL https://ollama.com/install.sh | sh && ollama pull llama3.1",
+                "used_for":   "local LLM (no API key, no data leaves your host)",
+                "fallback":   "mock LLM (deterministic, offline) or cloud providers (need API key)",
+            },
+            "fcl": {
+                "installed":   has("fcl"),
+                "installable_via": "pip",
+                "install_cmd": "pip install python-fcl   # needs libfcl-dev; no wheel for Python 3.14",
+                "used_for":   "mesh-vs-mesh collision detection (cutter vs fixtures)",
+                "fallback":   "pure-Python AABB collision check (active backend: " + collision_bknd + ")",
+            },
+        },
     }
 
 

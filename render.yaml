@@ -15,7 +15,11 @@ services:
     region: oregon
     branch: main
     autoDeploy: false                          # manual deploy from Render side
-    buildCommand: "pip install --upgrade pip && pip install -e \".[dev]\""
+    # buildCommand: apt-install CalculiX (ccx) for FEA + FreeCAD CLI for the
+    # optional FreeCAD CAM backend, then pip-install the package.
+    # python-fcl is NOT installed here: no wheel for Python 3.14. The
+    # pipeline falls back to a pure-Python AABB collision check.
+    buildCommand: "apt-get update -qq && apt-get install -y -qq --no-install-recommends calculix-ccx freecad && pip install --upgrade pip && pip install -e \".[dev]\""
     startCommand: "streamlit run orchestrator/web.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false"
     healthCheckPath: "/_stcore/health"
     envVars:
@@ -31,3 +35,5 @@ services:
         value: cadquery
       - key: JOYCAD_DEFAULT_MACHINE
         value: linuxcnc_3axis
+      - key: JOYCAD_COLLISION_BACKEND
+        value: auto                              # fcl if importable else aabb
