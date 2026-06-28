@@ -35,6 +35,7 @@ from pydantic import BaseModel, Field
 
 from .pipeline import Pipeline, PipelineConfig
 from .settings import (PRESETS, Settings, get_preset, list_presets)
+from .static_ui import router as static_ui_router
 
 
 # ---------------------------------------------------------------------------
@@ -218,28 +219,21 @@ def create_app() -> FastAPI:
     )
 
     # ------------------------------------------------------------------
+    # Static HTML UI (served at / and /ui)
+    # ------------------------------------------------------------------
+    app.include_router(static_ui_router)
+
+    # ------------------------------------------------------------------
     # Top-level
     # ------------------------------------------------------------------
-    @app.get("/")
-    def root():
-        return {
-            "service": "JoyCAD",
-            "version": "0.1.0",
-            "docs": "/docs",
-            "openapi": "/openapi.json",
-            "endpoints": [
-                "/health", "/v1/info", "/v1/settings",
-                "/v1/capabilities", "/v1/engines",
-                "/v1/machines", "/v1/materials", "/v1/processes",
-                "/v1/presets", "/v1/presets/{name}",
-                "/v1/examples",
-                "/v1/run", "/v1/pipeline",
-            ],
-        }
-
     @app.get("/health")
     def health():
         return {"status": "ok"}
+
+    @app.get("/openapi.json")
+    def openapi_alias():
+        """Convenience: same as the auto-generated OpenAPI doc."""
+        return app.openapi()
 
     # ------------------------------------------------------------------
     # v1 — info & introspection

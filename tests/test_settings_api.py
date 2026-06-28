@@ -108,12 +108,17 @@ def client():
     return TestClient(create_app())
 
 
-def test_root_lists_endpoints(client):
+def test_root_serves_html(client):
+    """The root serves the HTML UI (or, if disabled, falls back to JSON)."""
     r = client.get("/")
     assert r.status_code == 200
-    data = r.json()
-    assert "endpoints" in data
-    assert "/v1/pipeline" in data["endpoints"]
+    ct = r.headers.get("content-type", "")
+    assert "text/html" in ct or "application/json" in ct
+    if "html" in ct:
+        assert "JoyCAD" in r.text
+        assert "Build" in r.text
+    else:
+        assert "/v1/pipeline" in r.json()["endpoints"]
 
 
 def test_health(client):
