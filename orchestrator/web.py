@@ -398,7 +398,13 @@ intent_text = st.text_area(
 run = st.button("🚀 Build", type="primary", use_container_width=True)
 
 # --- curl helper ---
-with st.expander("Equivalent curl", expanded=False):
+with st.expander("Equivalent curl (local `joycad serve` only)", expanded=False):
+    st.caption(
+        "The live Render URL serves **only** the Streamlit UI. "
+        "The `/v1/*` programmatic endpoints are exposed when you run "
+        "`joycad serve` locally — paste that snippet into a terminal "
+        "where joycad is installed."
+    )
     settings_payload = {
         "preset": chosen,
         "intent": intent_text,
@@ -417,8 +423,23 @@ with st.expander("Equivalent curl", expanded=False):
             "export_formats": export_formats,
             "log_level": log_level, "extra_context": extra_context,
         })
+    # Only include non-empty API keys in the curl payload
+    api_keys_payload = {
+        k: st.session_state.get(k, "")
+        for k in ("openai_key", "anthropic_key", "openrouter_key",
+                  "ollama_host", "vllm_base")
+        if st.session_state.get(k, "").strip()
+    }
+    if api_keys_payload:
+        settings_payload["api_keys"] = {
+            "openai":      api_keys_payload.get("openai_key", ""),
+            "anthropic":   api_keys_payload.get("anthropic_key", ""),
+            "openrouter":  api_keys_payload.get("openrouter_key", ""),
+            "ollama_host": api_keys_payload.get("ollama_host", ""),
+            "vllm_base":   api_keys_payload.get("vllm_base", ""),
+        }
     curl_cmd = (
-        "curl -X POST https://joycad-mvp.onrender.com/v1/pipeline \\\n"
+        "curl -X POST http://localhost:8000/v1/pipeline \\\n"
         "  -H 'Content-Type: application/json' \\\n"
         f"  -d '{json.dumps(settings_payload)}'"
     )
