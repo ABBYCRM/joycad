@@ -23,7 +23,7 @@ from loguru import logger
 # Enums (string-valued for YAML/JSON safety)
 # ---------------------------------------------------------------------------
 LLMProvider = Literal["mock", "openai", "anthropic", "ollama", "openrouter",
-                    "vllm"]
+                    "vllm", "nvidia"]
 CADEngine = Literal["cadquery", "freecad", "onshape", "fusion"]
 CAMBackend = Literal["cadquery_cam", "freecad_path", "opencamlib", "blendercam"]
 PostProcessor = Literal["linuxcnc", "grbl", "marlin"]
@@ -183,6 +183,17 @@ PRESETS: dict[str, dict] = {
             "llm_provider": "openai",
             "cad_engine": "cadquery",
             "cam_backend": "cadquery_cam",
+        },
+    },
+    "nvidia-cloud": {
+        "label": "NVIDIA NIM cloud (Llama 3.1 70B)",
+        "description": "NVIDIA build.nvidia.com NIM API. Needs NVIDIA_API_KEY. "
+                       "Strong at code generation (CadQuery scripts).",
+        "settings": {
+            "llm_provider": "nvidia",
+            "cad_engine": "cadquery",
+            "cam_backend": "cadquery_cam",
+            "machine": "linuxcnc_3axis",
         },
     },
     "hobby-grbl": {

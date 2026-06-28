@@ -145,6 +145,7 @@ def _capability_status() -> dict:
                 ("ollama",    "OLLAMA_HOST",              None),
                 ("openrouter","OPENROUTER_API_KEY",       "openai"),  # uses openai client
                 ("vllm",      "VLLM_BASE_URL",            "openai"),
+                ("nvidia",    "NVIDIA_API_KEY",           "openai"),  # NVIDIA NIM is OpenAI-compatible
             ]
             if env_key is None
                or (mod is not None and has(mod))
