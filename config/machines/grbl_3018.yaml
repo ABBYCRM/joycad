@@ -1,0 +1,21 @@
+# grbl 1.1 hobby CNC (e.g. 3018)
+name: grbl_3018
+post: linuxcnc                       # grbl speaks a subset
+kinematics:
+  axes: 3
+  axis_travel_mm: { x: 300, y: 180, z: 45 }
+spindle:
+  max_rpm: 10000
+  default_rpm: 8000
+feeds:
+  max_mm_min: 2000
+  rapid_mm_min: 3000
+  default_plunge_mm_min: 200
+  default_feed_mm_min: 400
+tool_change: manual
+coolant: off
+controller: grbl
+safe_z_mm: 3.0
+work_offsets: [G54]
+notes: |
+  Hobby CNC, 24V spindle, no coolant, no ATC. Keep rapids < 3000 mm/min.

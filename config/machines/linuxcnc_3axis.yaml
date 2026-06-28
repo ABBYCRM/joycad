@@ -1,0 +1,25 @@
+# LinuxCNC 3-axis mill config (generic small-format CNC)
+name: linuxcnc_3axis
+post: linuxcnc
+kinematics:
+  axes: 3                       # X Y Z
+  axis_travel_mm:
+    x: 300
+    y: 200
+    z: 150
+spindle:
+  max_rpm: 24000
+  default_rpm: 12000
+feeds:
+  max_mm_min: 5000
+  rapid_mm_min: 8000
+  default_plunge_mm_min: 300
+  default_feed_mm_min: 800
+tool_change: manual
+coolant: flood
+controller: linuxcnc
+safe_z_mm: 5.0
+work_offsets: [G54, G55, G56, G57]
+notes: |
+  Generic benchtop 3-axis mill running LinuxCNC 2.8+.
+  Standard G-code dialect. M8 = flood, M7 = mist.

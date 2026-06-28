@@ -1,0 +1,44 @@
+# DFM (Design for Manufacturing) rule engine config.
+#
+# Each rule is a small predicate over CAD geometry. The engine reads
+# `process` and `material` and picks the active subset.
+
+default_process: cnc_mill
+
+# minimum feature sizes per process. Below these the rule fires WARN.
+min_feature:
+  cnc_mill:
+    internal_corner_radius_mm: 1.0    # depends on smallest tool
+    hole_diameter_mm: 1.0
+    wall_thickness_mm: 0.8
+    slot_width_mm: 1.0
+    pocket_depth_mm: 30.0             # > 6x tool diameter = risky
+    hole_depth_to_dia_ratio: 10       # > 10:1 needs deep-hole cycle
+  3d_print_fdm:
+    wall_thickness_mm: 0.8
+    hole_diameter_mm: 1.0
+    overhang_deg: 45
+    smallest_feature_mm: 0.4
+  sheet_metal:
+    hole_diameter_mm: 0.8
+    bend_radius_mm: 0.5
+    min_flange_mm: 2.0
+    hole_to_edge_mm: 1.0
+
+# tolerances the human explicitly set override anything here
+default_tolerances_mm:
+  linear: 0.1
+  angular: 0.5       # degrees
+  hole: 0.1
+
+# global hard-no list (always fail)
+hard_no:
+  - "self_intersecting_solid"
+  - "negative_wall_thickness"
+  - "zero_thin_wall"
+
+# style warnings (always report, never fail)
+warn_only:
+  - "untoleranced_hole"
+  - "unmarked_datum"
+  - "no_fillet_on_internal_corner"

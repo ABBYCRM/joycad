@@ -1,0 +1,282 @@
+{
+  "config": {
+    "intent": "a 50mm L-bracket, 6mm thick, 4 M6 holes, 6061-T6",
+    "out_dir": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs",
+    "machine": "linuxcnc_3axis",
+    "material": "6061-T6",
+    "cad_engine": "cadquery",
+    "cam_backend": "cadquery_cam",
+    "post_processor": "linuxcnc",
+    "process": "cnc_mill",
+    "context": "",
+    "extra_validators": [],
+    "safe_z_mm": 5.0,
+    "spindle_rpm": 12000,
+    "skip_validation": false,
+    "llm_provider": "mock"
+  },
+  "brief": {
+    "name": "bracket-001",
+    "part_type": "bracket",
+    "description": "a 50mm L-bracket, 6mm thick, 4 M6 holes, 6061-T6",
+    "material": "6061-T6",
+    "process": "cnc_mill",
+    "units": "mm",
+    "bbox_mm": {
+      "length": 50,
+      "width": 30,
+      "thickness": 6,
+      "height": 50
+    },
+    "thickness_mm": 6,
+    "features": [
+      {
+        "kind": "through_hole",
+        "role": "mounting",
+        "quantity": 1,
+        "diameter_mm": 6.6,
+        "depth_mm": null,
+        "position_mm": {
+          "x": 11.0,
+          "y": 3.0,
+          "z": 15
+        },
+        "notes": "",
+        "standard": "M6.0 clearance"
+      },
+      {
+        "kind": "through_hole",
+        "role": "mounting",
+        "quantity": 1,
+        "diameter_mm": 6.6,
+        "depth_mm": null,
+        "position_mm": {
+          "x": 39.0,
+          "y": 3.0,
+          "z": 15
+        },
+        "notes": "",
+        "standard": "M6.0 clearance"
+      },
+      {
+        "kind": "through_hole",
+        "role": "mounting",
+        "quantity": 1,
+        "diameter_mm": 6.6,
+        "depth_mm": null,
+        "position_mm": {
+          "x": 11.0,
+          "y": 15.0,
+          "z": 3.0
+        },
+        "notes": "",
+        "standard": "M6.0 clearance"
+      },
+      {
+        "kind": "through_hole",
+        "role": "mounting",
+        "quantity": 1,
+        "diameter_mm": 6.6,
+        "depth_mm": null,
+        "position_mm": {
+          "x": 39.0,
+          "y": 15.0,
+          "z": 3.0
+        },
+        "notes": "",
+        "standard": "M6.0 clearance"
+      }
+    ],
+    "tolerances_mm": {
+      "linear": 0.1,
+      "hole": 0.1
+    },
+    "surface_finish_um_ra": 1.6,
+    "quantity": 1,
+    "finish": "as-machined",
+    "cosmetic": false,
+    "clarifying_questions": [],
+    "assumptions": [
+      "Defaults: 4 mounting holes, M6.0, chamfered edges."
+    ]
+  },
+  "script_path": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.cadquery.py",
+  "geometry": {
+    "step_path": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.step",
+    "native_path": null,
+    "units": "mm",
+    "bbox_mm": [
+      50.0,
+      30.000000000000004,
+      50.0
+    ],
+    "volume_mm3": 21764.45667202888,
+    "surface_area_mm2": 8940.387718411248,
+    "metadata": {
+      "inspector": "cadquery",
+      "engine": "cadquery"
+    }
+  },
+  "geometry_outputs": {
+    "stl": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.stl",
+    "dxf": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.dxf",
+    "svg": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.svg"
+  },
+  "cam_job": {
+    "machine": "linuxcnc_3axis",
+    "stock_mm": {
+      "x": 54.0,
+      "y": 34.0,
+      "z": 52.0
+    },
+    "work_offset": "G54",
+    "operations": [
+      {
+        "kind": "face",
+        "tool": "T1",
+        "params": {
+          "stepover_mm": 4.0,
+          "depth_mm": 1.0
+        }
+      },
+      {
+        "kind": "contour",
+        "tool": "T1",
+        "params": {
+          "depth_mm": 49.0,
+          "offset_mm": 0.5
+        }
+      },
+      {
+        "kind": "drill",
+        "tool": "T3",
+        "params": {
+          "depth_mm": 51.0,
+          "peck_mm": 1.5
+        }
+      },
+      {
+        "kind": "drill",
+        "tool": "T3",
+        "params": {
+          "depth_mm": 6.5,
+          "peck_mm": 1.5,
+          "x": 11.0,
+          "y": 3.0
+        }
+      },
+      {
+        "kind": "drill",
+        "tool": "T3",
+        "params": {
+          "depth_mm": 6.5,
+          "peck_mm": 1.5,
+          "x": 39.0,
+          "y": 3.0
+        }
+      },
+      {
+        "kind": "drill",
+        "tool": "T3",
+        "params": {
+          "depth_mm": 6.5,
+          "peck_mm": 1.5,
+          "x": 11.0,
+          "y": 15.0
+        }
+      },
+      {
+        "kind": "drill",
+        "tool": "T3",
+        "params": {
+          "depth_mm": 6.5,
+          "peck_mm": 1.5,
+          "x": 39.0,
+          "y": 15.0
+        }
+      }
+    ],
+    "safe_z_mm": 5.0,
+    "spindle_rpm": 12000,
+    "coolant": "flood"
+  },
+  "raw_toolpaths_path": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/toolpaths.json",
+  "gcode_path": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.gcode",
+  "gcode_validation": {
+    "status": "pass",
+    "line_count": 34,
+    "feed_max_mm_min": 600.0,
+    "rapid_max_z_mm": -50.0,
+    "feed_max_z_mm": -50.0,
+    "has_tool_changes": true,
+    "has_coolant": true,
+    "issues": []
+  },
+  "validation_reports": [
+    {
+      "name": "fea",
+      "status": "skipped",
+      "metrics": {},
+      "issues": [
+        {
+          "severity": "info",
+          "msg": "CalculiX 'ccx' not on PATH; FEA skipped."
+        }
+      ],
+      "artifacts": []
+    },
+    {
+      "name": "dfm",
+      "status": "pass",
+      "metrics": {
+        "bbox_mm": [
+          50.0,
+          30.0,
+          50.0
+        ],
+        "volume_mm3": 21764.45667202892
+      },
+      "issues": [],
+      "artifacts": []
+    },
+    {
+      "name": "tolerance",
+      "status": "fail",
+      "metrics": {
+        "n_dimensions": 4,
+        "worst_case_mm": 0.7000000000000001,
+        "statistical_mm": 0.2704163456597992,
+        "worst_plus_mm": 0.35000000000000003,
+        "worst_minus_mm": 0.35000000000000003,
+        "target_mm": 0.2
+      },
+      "issues": [
+        {
+          "severity": "info",
+          "msg": "worst-case 0.700 > target 0.2"
+        }
+      ],
+      "artifacts": []
+    }
+  ],
+  "bom": {
+    "notes": "Generated by JoyCAD. Verify before quoting.",
+    "items": [
+      {
+        "item": "bracket-001",
+        "description": "a 50mm L-bracket, 6mm thick, 4 M6 holes, 6061-T6",
+        "qty": 1,
+        "material": "6061-T6",
+        "process": "cnc_mill",
+        "stock_size_mm": "53.0 x 33.0 x 9.0 mm",
+        "finish": "as-machined",
+        "estimated_cost_usd": null,
+        "source_file": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.step"
+      }
+    ]
+  },
+  "manufacturing_notes_path": "/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/manufacturing_notes.md",
+  "steps": [],
+  "ok": false,
+  "error": null
+}

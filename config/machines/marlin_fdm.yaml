@@ -1,0 +1,19 @@
+# Marlin-flavored FDM 3D printer
+name: marlin_fdm
+post: linuxcnc                       # close enough
+kinematics:
+  axes: 3
+  axis_travel_mm: { x: 250, y: 210, z: 250 }
+spindle: null
+feeds:
+  max_mm_min: 1500
+  rapid_mm_min: 4800
+  default_feed_mm_min: 1200
+tool_change: auto
+coolant: off
+controller: marlin
+safe_z_mm: 2.0
+work_offsets: []
+notes: |
+  Standard Marlin FDM (Prusa MK4 / Ender / Voron). E-axis ignored.
+  M104/M109 = hotend, M140/M190 = bed.

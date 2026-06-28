@@ -1,0 +1,7 @@
+{
+  "intent": "An L-shaped aluminum bracket. Vertical face 50mm tall x 50mm long x 6mm thick. Horizontal face 50mm long x 30mm wide x 6mm thick. Two M6 clearance holes on the vertical face (centers at x=10,y=15 and x=40,y=15), two on the horizontal face (x=10,y=10 and x=40,y=10). Material 6061-T6, as-machined finish. One-off prototype.",
+  "machine": "linuxcnc_3axis",
+  "material": "6061-T6",
+  "cad_engine": "cadquery",
+  "context": "Mounts a small motor to a chassis. Light load."
+}

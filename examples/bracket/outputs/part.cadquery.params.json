@@ -1,0 +1,75 @@
+{
+  "name": "bracket-001",
+  "material": "6061-T6",
+  "process": "cnc_mill",
+  "bbox_mm": {
+    "length": 50,
+    "width": 30,
+    "thickness": 6,
+    "height": 50
+  },
+  "thickness_mm": 6,
+  "tolerances_mm": {
+    "linear": 0.1,
+    "hole": 0.1
+  },
+  "finish": "as-machined",
+  "features": [
+    {
+      "kind": "through_hole",
+      "role": "mounting",
+      "quantity": 1,
+      "diameter_mm": 6.6,
+      "depth_mm": null,
+      "position_mm": {
+        "x": 11.0,
+        "y": 3.0,
+        "z": 15
+      },
+      "notes": "",
+      "standard": "M6.0 clearance"
+    },
+    {
+      "kind": "through_hole",
+      "role": "mounting",
+      "quantity": 1,
+      "diameter_mm": 6.6,
+      "depth_mm": null,
+      "position_mm": {
+        "x": 39.0,
+        "y": 3.0,
+        "z": 15
+      },
+      "notes": "",
+      "standard": "M6.0 clearance"
+    },
+    {
+      "kind": "through_hole",
+      "role": "mounting",
+      "quantity": 1,
+      "diameter_mm": 6.6,
+      "depth_mm": null,
+      "position_mm": {
+        "x": 11.0,
+        "y": 15.0,
+        "z": 3.0
+      },
+      "notes": "",
+      "standard": "M6.0 clearance"
+    },
+    {
+      "kind": "through_hole",
+      "role": "mounting",
+      "quantity": 1,
+      "diameter_mm": 6.6,
+      "depth_mm": null,
+      "position_mm": {
+        "x": 39.0,
+        "y": 15.0,
+        "z": 3.0
+      },
+      "notes": "",
+      "standard": "M6.0 clearance"
+    }
+  ]
+}

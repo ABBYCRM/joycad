@@ -1,0 +1,2 @@
+item,description,qty,material,process,stock_size_mm,finish,est_cost_usd,source_file
+bracket-001,"a 50mm L-bracket, 6mm thick, 4 M6 holes, 6061-T6",1,6061-T6,cnc_mill,53.0 x 33.0 x 9.0 mm,as-machined,,/run/csi/mount-root/nas/eab0d61a99b6696edb3d2aff87b585e8/bundle/examples/bracket/outputs/part.step

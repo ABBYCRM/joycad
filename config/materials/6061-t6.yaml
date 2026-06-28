@@ -1,0 +1,18 @@
+# Material: 6061-T6 aluminum
+name: 6061-T6
+category: aluminum_alloy
+density_g_cm3: 2.70
+yield_strength_mpa: 276
+ultimate_strength_mpa: 310
+elongation_pct: 12
+elastic_modulus_gpa: 68.9
+poisson: 0.33
+machinability_rating: 1.0          # relative to free-cutting steel
+recommended_cutting_speed_m_min:
+  endmill_carbide: 250-400
+  drill_carbide: 100-180
+feeds:
+  endmill_chipload_mm_per_tooth: 0.04-0.10
+notes: |
+  Workhorse aluminum. Soft, gummy, welds to tools at high RPM without coolant.
+  Use sharp carbide, flood coolant, high spindle speed.
