@@ -1,0 +1,44 @@
+# JoyCAD default settings
+# Loaded by orchestrator.settings.Settings.default()
+# Env vars (JOYCAD_*) override these.
+
+intent: ""
+machine: linuxcnc_3axis
+material: 6061-T6
+process: cnc_mill
+cad_engine: cadquery
+cam_backend: cadquery_cam
+post_processor: linuxcnc
+llm_provider: mock
+
+safe_z_mm: 5.0
+spindle_rpm: 12000
+coolant: flood
+stock_padding_mm: 3.0
+work_offset: G54
+
+skip_validation: false
+validators_enabled:
+  - fea
+  - dfm
+  - tolerance
+collision_cutter_dia_mm: 6.0
+collision_cutter_len_mm: 25.0
+fea_force_n: 100.0
+
+export_formats:
+  - step
+  - stl
+  - dxf
+  - svg
+  - gcode
+  - bom
+  - notes
+write_pipeline_result_json: true
+write_3d_print_gcode: false
+
+log_level: INFO
+cache_results: true
+graceful_degradation: true
+
+extra_context: ""

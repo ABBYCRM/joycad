@@ -29,5 +29,6 @@ htmlcov/
 
 # JoyCAD specific
 out.step
+out/
 part.gcode.3mf
 freecad_path_runner.py

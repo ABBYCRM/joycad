@@ -1,4 +1,4 @@
-"""JoyCAD orchestrator — the pipeline runner.
+"""JoyCAD orchestrator — the pipeline runner + UI + API.
 
     Pipeline
         intent  →  StructuredBrief
@@ -10,12 +10,19 @@
                 →  validation        (FEA, collision, DFM, tolerance)
                 →  outputs           (BOM, mfg notes, drawings)
 
-    Two entry points:
+    Entry points
         Pipeline.run()              programmatic
-        joycad run / joycad serve   CLI / REST
+        joycad run / joycad serve   CLI
+        joycad demo                  Streamlit web UI
+        POST /v1/pipeline            REST API
 """
 from .pipeline import Pipeline, PipelineConfig, PipelineResult
+from .settings import Settings, get_preset, list_presets, PRESETS
 from .cli import app
 from .api import create_app
 
-__all__ = ["Pipeline", "PipelineConfig", "PipelineResult", "app", "create_app"]
+__all__ = [
+    "Pipeline", "PipelineConfig", "PipelineResult",
+    "Settings", "get_preset", "list_presets", "PRESETS",
+    "app", "create_app",
+]
