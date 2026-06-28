@@ -1,0 +1,33 @@
+# render.yaml — Render Blueprint (Infrastructure-as-Code)
+# JoyCAD MVP: AI-driven CAD/CAM bundle, served via Streamlit
+#
+# To re-deploy from this file:
+#   1. Render Dashboard → New → Blueprint
+#   2. Connect to https://github.com/ABBYCRM/joycad
+#   3. Select this render.yaml
+#   4. Apply
+
+services:
+  - type: web_service
+    name: joycad-mvp
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    autoDeploy: false                          # manual deploy from Render side
+    buildCommand: "pip install --upgrade pip && pip install -e \".[dev]\""
+    startCommand: "streamlit run orchestrator/web.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false"
+    healthCheckPath: "/_stcore/health"
+    envVars:
+      - key: JOYCAD_LLM_PROVIDER
+        value: mock                              # MVP default — no API key needed
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: JOYCAD_LOG_LEVEL
+        value: INFO
+      - key: JOYCAD_CAM_BACKEND
+        value: cadquery_cam                     # no external CLI needed
+      - key: JOYCAD_CAD_ENGINE
+        value: cadquery
+      - key: JOYCAD_DEFAULT_MACHINE
+        value: linuxcnc_3axis
