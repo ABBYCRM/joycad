@@ -31,8 +31,17 @@ class CadQueryEngine(CADEngine):
                 "cadquery not installed — `mamba install -c conda-forge cadquery`"
             ) from e
 
-        # Exec the script in a clean module namespace; expect a `result` CQ obj.
-        ns: dict = {"__name__": "__joycad_script__"}
+        # Exec the script in a namespace pre-loaded with the imports the
+        # CADScriptGenerator prompt promises are "already available".
+        # Without this, any LLM that follows the prompt verbatim (skips
+        # `import cadquery as cq`) will fail with NameError.
+        import math as _math
+        ns: dict = {
+            "__name__": "__joycad_script__",
+            "cq": cq,
+            "cadquery": cq,
+            "math": _math,
+        }
         try:
             with script_path.open() as f:
                 code = f.read()
