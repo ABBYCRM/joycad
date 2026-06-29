@@ -60,7 +60,9 @@ SYSTEM_PROMPT_CADQUERY = """You generate a single self-contained Python script f
 (https://cadquery.readthedocs.io).
 
 Rules:
-- `import cadquery as cq` is already available.
+- ALWAYS start the script with `import cadquery as cq` (and `import math`
+  if you need trig). Even though the runtime pre-loads these in scope,
+  include the imports so the script is also runnable standalone.
 - The script must end with a variable named `result` containing a CQ object.
 - Use millimetres.
 - Use cq.Workplane, .box, .cylinder, .hole, .faces, .edges, .fillet, .chamfer.

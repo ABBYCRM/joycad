@@ -33,6 +33,9 @@ Process = Literal["cnc_mill", "cnc_lathe", "3d_print_sla", "3d_print_fdm",
 Coolant = Literal["flood", "mist", "off"]
 ValidatorName = Literal["fea", "dfm", "collision", "tolerance"]
 ExportFormat = Literal["step", "stl", "dxf", "svg", "gcode", "print_gcode", "bom", "notes"]
+SlicerName = Literal["inline", "prusa-slicer", "orca-slicer", "cura",
+                     "bambu-studio", "simplify3d"]
+Adhesion = Literal["none", "brim", "raft"]
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +85,25 @@ class Settings:
     write_pipeline_result_json: bool = True
     write_3d_print_gcode: bool = False
 
+    # --- slicer (for 3d_print_fdm / sla / sls) ---
+    slicer: SlicerName = "inline"
+    slicer_settings: dict = field(default_factory=lambda: {
+        "layer_height_mm": 0.2,
+        "first_layer_height_mm": 0.3,
+        "infill_percent": 20,
+        "perimeters": 3,
+        "top_layers": 4,
+        "bottom_layers": 3,
+        "print_speed_mm_s": 60,
+        "travel_speed_mm_s": 150,
+        "nozzle_temp_c": 220,
+        "bed_temp_c": 60,
+        "supports": False,
+        "adhesion": "brim",
+        "retraction_mm": 0.8,
+        "retraction_speed_mm_s": 35,
+    })
+
     # --- behaviour ---
     log_level: str = "INFO"
     cache_results: bool = True             # used by Streamlit @st.cache_data
@@ -124,6 +146,7 @@ class Settings:
             "JOYCAD_LOG_LEVEL": "log_level",
             "JOYCAD_POST_PROCESSOR": "post_processor",
             "JOYCAD_PROCESS": "process",
+            "JOYCAD_SLICER": "slicer",
         }
         for env_key, attr in env_map.items():
             v = os.getenv(env_key)
