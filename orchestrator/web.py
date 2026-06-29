@@ -257,6 +257,30 @@ with st.sidebar:
         help="mock = deterministic, zero API key. ollama = local LLM. cloud = needs key.",
     )
 
+    # --- slicer (for 3D-printing processes) ---
+    # Only meaningful when process is a 3D-print process, but we still let the
+    # user change it any time so the slider expander can be tuned in advance.
+    slicer_options = ["inline", "prusa-slicer", "orca-slicer", "cura",
+                      "bambu-studio", "simplify3d"]
+    slicer_labels = {
+        "inline":        "JoyCAD inline (always works)",
+        "prusa-slicer":  "PrusaSlicer (local CLI)",
+        "orca-slicer":   "OrcaSlicer (local CLI)",
+        "cura":          "Cura / CuraEngine (local CLI)",
+        "bambu-studio":  "Bambu Studio (local CLI)",
+        "simplify3d":    "Simplify3D (no CLI; re-slice locally)",
+    }
+    slicer = st.selectbox(
+        "Slicer",
+        options=slicer_options,
+        index=slicer_options.index(st.session_state.get("slicer", "inline"))
+              if st.session_state.get("slicer", "inline") in slicer_options else 0,
+        format_func=lambda k: slicer_labels[k],
+        help="On Render only 'inline' is active. Other slicers work when "
+             "you run JoyCAD locally with the binary installed.",
+    )
+    st.session_state.slicer = slicer
+
     # --- advanced settings (collapsible) ---
     with st.expander("Advanced settings", expanded=st.session_state.advanced_open):
         safe_z_mm = st.slider("Safe Z (mm)", 1.0, 20.0, chosen_preset.safe_z_mm, 0.5)
@@ -287,6 +311,53 @@ with st.sidebar:
             placeholder="e.g. 'this is a prototype for an aerospace fixture, light load only'",
             height=80,
         )
+
+    # --- slicer settings (for FDM printing) ---
+    with st.expander("🧊 Slicer settings", expanded=False):
+        st.caption(
+            "Sliders for FDM slicing parameters. The 'inline' slicer "
+            "(always available) writes a basic Marlin G-code that uses "
+            "these values. PrusaSlicer / OrcaSlicer / Cura / Bambu Studio "
+            "use them when invoked locally with their CLI installed."
+        )
+        default_ss = {
+            "layer_height_mm": 0.2,
+            "first_layer_height_mm": 0.3,
+            "infill_percent": 20,
+            "perimeters": 3,
+            "top_layers": 4,
+            "bottom_layers": 3,
+            "print_speed_mm_s": 60,
+            "travel_speed_mm_s": 150,
+            "nozzle_temp_c": 220,
+            "bed_temp_c": 60,
+            "supports": False,
+            "adhesion": "brim",
+            "retraction_mm": 0.8,
+            "retraction_speed_mm_s": 35,
+        }
+        ss = {**default_ss, **(st.session_state.get("ss") or {})}
+        cols = st.columns(2)
+        ss["layer_height_mm"]       = cols[0].slider("Layer height (mm)", 0.05, 0.4, ss["layer_height_mm"], 0.05)
+        ss["first_layer_height_mm"] = cols[1].slider("First layer (mm)",    0.1,  0.5, ss["first_layer_height_mm"], 0.05)
+        ss["infill_percent"]        = st.slider("Infill (%)", 0, 100, ss["infill_percent"], 5)
+        ss["perimeters"]            = st.slider("Perimeters / walls", 1, 6, ss["perimeters"])
+        cols = st.columns(2)
+        ss["top_layers"]    = cols[0].slider("Top layers",    0, 10, ss["top_layers"])
+        ss["bottom_layers"] = cols[1].slider("Bottom layers", 0, 10, ss["bottom_layers"])
+        cols = st.columns(2)
+        ss["print_speed_mm_s"]   = cols[0].slider("Print speed (mm/s)", 10, 300, ss["print_speed_mm_s"], 5)
+        ss["travel_speed_mm_s"]  = cols[1].slider("Travel speed (mm/s)", 50, 500, ss["travel_speed_mm_s"], 5)
+        cols = st.columns(2)
+        ss["nozzle_temp_c"] = cols[0].slider("Nozzle °C", 180, 280, ss["nozzle_temp_c"], 5)
+        ss["bed_temp_c"]    = cols[1].slider("Bed °C",     0, 120, ss["bed_temp_c"], 5)
+        cols = st.columns(3)
+        ss["supports"]  = cols[0].checkbox("Supports", value=ss["supports"])
+        ss["adhesion"]  = cols[1].selectbox("Adhesion", options=["none", "brim", "raft"],
+                                              index=["none", "brim", "raft"].index(ss["adhesion"]))
+        ss["retraction_mm"] = cols[2].slider("Retraction (mm)", 0.0, 5.0, ss["retraction_mm"], 0.1)
+        ss["retraction_speed_mm_s"] = st.slider("Retraction speed (mm/s)", 10, 80, ss["retraction_speed_mm_s"])
+        st.session_state.ss = ss
 
     st.divider()
 
@@ -437,6 +508,8 @@ with st.expander("Equivalent curl (local `joycad serve` only)", expanded=False):
             "skip_validation": skip_validation,
             "export_formats": export_formats,
             "log_level": log_level, "extra_context": extra_context,
+            "slicer": slicer,
+            "slicer_settings": st.session_state.get("ss", {}),
         })
     # Only include non-empty API keys in the curl payload
     api_keys_payload = {
@@ -480,6 +553,8 @@ if run and intent_text.strip():
         "skip_validation": skip_validation,
         "export_formats": export_formats,
         "log_level": log_level, "extra_context": extra_context,
+        "slicer": slicer,
+        "slicer_settings": st.session_state.get("ss", {}),
     }
     # Collect any API keys the user pasted in this session. They flow into
     # the pipeline runner only for this single run.

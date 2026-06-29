@@ -96,6 +96,10 @@ class PipelineRequest(BaseModel):
     extra_context: Optional[str] = None
     preset: Optional[str] = None
 
+    # --- slicer (for 3D-printing processes) ---
+    slicer: Optional[str] = None
+    slicer_settings: Optional[dict] = None
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -196,6 +200,7 @@ def _info_payload() -> dict:
     from cam import list_cams
     from cad import list_engines
     from validation import list_validators
+    from slicing import list_slicers
 
     return {
         "service": "JoyCAD",
@@ -205,6 +210,7 @@ def _info_payload() -> dict:
         "cad_engines":        list_engines(),
         "cam_backends":       list_cams(),
         "validators":         list_validators(),
+        "slicers":            list_slicers(),
         "processes":          ["cnc_mill", "cnc_lathe", "3d_print_sla",
                                "3d_print_fdm", "3d_print_sls", "laser_cut",
                                "plasma_cut", "sheet_metal", "injection_mold"],
